@@ -40,6 +40,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * DubboSample
@@ -76,6 +77,8 @@ public class DubboSample extends AbstractSampler {
     public static String DEFAULT_CLUSTER = "failfast";
     public static String DEFAULT_CONNECTIONS = "100";
     public static ApplicationConfig application = new ApplicationConfig("DubboSample");
+
+    public Map<String, GenericService> serviceMap = new ConcurrentHashMap<>();
 
     /**
      * get Registry Protocol
@@ -521,13 +524,16 @@ public class DubboSample extends AbstractSampler {
             }
 
             // The registry's address is to generate the ReferenceConfigCache key
-            ReferenceConfigCache cache = ReferenceConfigCache.getCache(getAddress(), new ReferenceConfigCache.KeyGenerator() {
+            ReferenceConfigCache.KeyGenerator keyGenerator = new ReferenceConfigCache.KeyGenerator() {
                 @Override
                 public String generateKey(org.apache.dubbo.config.ReferenceConfig<?> referenceConfig) {
                     return referenceConfig.toString();
                 }
-			});
-            GenericService genericService = (GenericService) cache.get(reference);
+            };
+            GenericService genericService = serviceMap.computeIfAbsent(keyGenerator.generateKey(reference), key -> {
+                ReferenceConfigCache cache = ReferenceConfigCache.getCache(getAddress(), keyGenerator);
+                return (GenericService) cache.get(reference);
+            });
             if (genericService == null) {
                 res.setSuccessful(false);
                 return MessageFormat.format(ErrorCode.GENERIC_SERVICE_IS_NULL.getMessage(), interfaceName);

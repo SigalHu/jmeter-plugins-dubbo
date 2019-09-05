@@ -34,7 +34,6 @@ public class JsonUtils {
 
 	private static final Gson gson = new GsonBuilder()
 			.setDateFormat("yyyy-MM-dd HH:mm:ss")
-			.setPrettyPrinting()
 			.disableHtmlEscaping()
 			.serializeNulls()
 			.create();

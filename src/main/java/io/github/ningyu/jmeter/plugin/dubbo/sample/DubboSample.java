@@ -93,7 +93,7 @@ public class DubboSample extends AbstractSampler implements Interruptible {
         reqs.put("method", Constants.getMethod(this));
         reqs.put("methodArgs", Constants.getMethodArgs(this));
         reqs.put("attachment", Constants.getAttachmentArgs(this));
-        return new Gson().toJson(reqs);
+        return JsonUtils.toJson(reqs);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
